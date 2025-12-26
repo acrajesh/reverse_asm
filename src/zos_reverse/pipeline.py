@@ -9,7 +9,7 @@ from .ingestion import BinaryIngestor
 from .disassembler import Disassembler, NativeDecoder
 from .classifier import RegionClassifier
 from .cfg_builder import CFGBuilder, ProcedureDetector
-from .ir import DisassemblyResult
+from .ir import DisassemblyResult, Confidence
 
 logger = logging.getLogger(__name__)
 
@@ -183,11 +183,25 @@ class ReverseEngineeringPipeline:
         
         # Check procedure detection
         if cfg.procedures:
-            avg_confidence = sum(p.confidence for p in cfg.procedures.values()) / len(cfg.procedures)
+            # Count confidence levels
+            confidence_counts = {'HIGH': 0, 'MEDIUM': 0, 'LOW': 0}
+            for p in cfg.procedures.values():
+                if p.confidence == Confidence.HIGH:
+                    confidence_counts['HIGH'] += 1
+                elif p.confidence == Confidence.MEDIUM:
+                    confidence_counts['MEDIUM'] += 1
+                else:
+                    confidence_counts['LOW'] += 1
+            
+            # Calculate average confidence score (HIGH=1.0, MEDIUM=0.5, LOW=0.2)
+            total_procs = len(cfg.procedures)
+            avg_confidence = (confidence_counts['HIGH'] * 1.0 + 
+                            confidence_counts['MEDIUM'] * 0.5 + 
+                            confidence_counts['LOW'] * 0.2) / total_procs
             validation['scores']['procedure_confidence'] = avg_confidence
             
-            if avg_confidence < 0.5:
-                validation['issues'].append('Low confidence in detected procedures')
+            if confidence_counts['LOW'] > total_procs / 2:
+                validation['issues'].append('Majority of procedures have low confidence')
         
         # Check for common patterns
         stats = result.statistics

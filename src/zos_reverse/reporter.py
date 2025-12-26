@@ -104,7 +104,7 @@ class ReportWriter:
                 f.write("\nDetected Procedures:\n")
                 for proc in sorted(cfg.procedures.values(), key=lambda p: p.entry_address):
                     f.write(f"  - {proc.name} @ 0x{proc.entry_address:08X}")
-                    f.write(f" (confidence: {proc.confidence:.2f}, method: {proc.detection_method})\n")
+                    f.write(f" (confidence: {proc.confidence.value}, method: {proc.detection_method})\n")
                     if proc.calls_to:
                         called_names = [cfg.procedures[pid].name for pid in proc.calls_to if pid in cfg.procedures]
                         f.write(f"    Calls: {', '.join(called_names)}\n")

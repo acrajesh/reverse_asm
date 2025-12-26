@@ -1,0 +1,32 @@
+modules:
+- name: branching
+  format: unknown
+  instructions: 11
+  procedures: 1
+  decode_rate: 1.0
+  entry_point: null
+- name: loop
+  format: unknown
+  instructions: 8
+  procedures: 1
+  decode_rate: 1.0
+  entry_point: null
+- name: simple
+  format: unknown
+  instructions: 8
+  procedures: 1
+  decode_rate: 1.0
+  entry_point: null
+- name: subroutine
+  format: unknown
+  instructions: 11
+  procedures: 1
+  decode_rate: 1.0
+  entry_point: null
+total_modules: 4
+timestamp: '2025-12-26T16:50:11.470676'
+summary:
+  total_instructions: 38
+  total_procedures: 4
+  total_unknown_bytes: 0
+  average_decode_rate: 1.0

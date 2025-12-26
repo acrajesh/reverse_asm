@@ -108,7 +108,7 @@ class AssemblerReconstructor:
             "*" * 80,
             f"* Procedure: {proc.name}",
             f"* Entry: 0x{proc.entry_address:08X}",
-            f"* Detection: {proc.detection_method} (confidence: {proc.confidence:.2f})",
+            f"* Detection: {proc.detection_method} (confidence: {proc.confidence.value})",
         ])
         
         if proc.calls_to:

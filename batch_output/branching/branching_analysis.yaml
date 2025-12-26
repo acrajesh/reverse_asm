@@ -1,0 +1,113 @@
+metadata:
+  name: branching
+  format: unknown
+  entry_point: null
+  externals: []
+  csects: []
+  amode: null
+  rmode: null
+  attributes: {}
+statistics:
+  instruction_count: 11
+  decoded_bytes: 40
+  unknown_bytes: 0
+  decode_rate: 1.0
+  branch_count: 4
+  call_count: 1
+  return_count: 1
+  top_mnemonics:
+  - !!python/tuple
+    - BC
+    - 2
+  - !!python/tuple
+    - LA
+    - 2
+  - !!python/tuple
+    - BALR
+    - 1
+  - !!python/tuple
+    - STM
+    - 1
+  - !!python/tuple
+    - L
+    - 1
+  - !!python/tuple
+    - C
+    - 1
+  - !!python/tuple
+    - ST
+    - 1
+  - !!python/tuple
+    - LM
+    - 1
+  - !!python/tuple
+    - BCR
+    - 1
+  processing_time: 0.0004520416259765625
+  file_path: samples/branching.bin
+cfg:
+  module: branching
+  entry_points:
+  - '0x00000000'
+  blocks:
+    block_00000000:
+      id: block_00000000
+      start: '0x00000000'
+      end: '0x00000000'
+      type: call
+      instructions: 1
+      predecessors: []
+      successors:
+      - block_00000002
+      fall_through: block_00000002
+      branch_targets: []
+      confidence: high
+    block_00000002:
+      id: block_00000002
+      start: '0x00000002'
+      end: '0x0000000E'
+      type: branch
+      instructions: 4
+      predecessors:
+      - block_00000000
+      successors:
+      - block_00000012
+      fall_through: block_00000012
+      branch_targets: []
+      confidence: high
+    block_00000012:
+      id: block_00000012
+      start: '0x00000012'
+      end: '0x00000026'
+      type: return
+      instructions: 6
+      predecessors:
+      - block_00000002
+      successors: []
+      fall_through: null
+      branch_targets: []
+      confidence: high
+  procedures:
+    proc_0001:
+      id: proc_0001
+      name: ENTRY_00000000
+      entry: '0x00000000'
+      exits:
+      - '0x00000026'
+      blocks:
+      - block_00000000
+      - block_00000002
+      - block_00000012
+      calls_to: []
+      called_by: []
+      confidence: high
+      detection: entry_point
+  call_graph: {}
+  unresolved:
+  - '0x00000000'
+  - '0x0000000E'
+  - '0x00000026'
+  data_regions: []
+unknown_regions: []
+warnings: []
+timestamp: '2025-12-26T16:50:11.452122'

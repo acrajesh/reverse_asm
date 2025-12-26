@@ -4,7 +4,7 @@ from typing import List, Tuple
 from enum import Enum
 import logging
 
-from .ir import Instruction
+from .ir import Instruction, Confidence
 
 logger = logging.getLogger(__name__)
 
@@ -14,13 +14,6 @@ class RegionType(Enum):
     CODE = "code"
     DATA = "data"
     UNKNOWN = "unknown"
-
-
-class Confidence(Enum):
-    """Confidence levels per Technical Design §12.4"""
-    HIGH = "high"        # Direct evidence, no inference
-    MEDIUM = "medium"    # Pattern-based inference
-    LOW = "low"          # Heuristic guess
 
 
 class Region:

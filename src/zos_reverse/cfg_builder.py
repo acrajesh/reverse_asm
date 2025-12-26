@@ -5,7 +5,7 @@ import logging
 
 from .ir import (
     Instruction, BasicBlock, ControlFlowGraph, BlockType,
-    DisassemblyResult, Procedure
+    DisassemblyResult, Procedure, Confidence
 )
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,6 @@ class CFGBuilder:
         
         # Add control flow edges
         unresolved = self._add_control_flow_edges()
-        cfg.unresolved_branches.extend(unresolved)
         
         # Assign synthetic labels to branch targets
         self._assign_synthetic_labels()
@@ -41,6 +40,7 @@ class CFGBuilder:
         # Update CFG
         cfg = disasm_result.cfg
         cfg.basic_blocks = self.blocks
+        cfg.unresolved_branches.extend(unresolved)
         
         # Find unresolved branches
         self._find_unresolved_branches(cfg)
@@ -117,12 +117,12 @@ class CFGBuilder:
                 block_type=block_type
             )
             
-            self.blocks.append(block)
+            self.blocks[block_id] = block
     
     def _add_control_flow_edges(self):
         """Add edges between basic blocks"""
         unresolved_branches = []
-        for block_id, block in enumerate(self.blocks):
+        for block_id, block in self.blocks.items():
             if not block.instructions:
                 continue
                 
@@ -306,7 +306,7 @@ class ProcedureDetector:
             name=f"ENTRY_{entry_addr:08X}",
             entry_address=entry_addr,
             detection_method="entry_point",
-            confidence=0.95
+            confidence=Confidence.HIGH
         )
         
         # Find all blocks in this procedure (simplified - just connected blocks)
@@ -332,7 +332,7 @@ class ProcedureDetector:
                                 name=f"SUB_{inst.branch_target:08X}",
                                 entry_address=inst.branch_target,
                                 detection_method="call_target",
-                                confidence=0.85
+                                confidence=Confidence.HIGH
                             )
                             
                             visited = set()
@@ -356,7 +356,7 @@ class ProcedureDetector:
                             name=f"FUNC_{block.start_address:08X}",
                             entry_address=block.start_address,
                             detection_method="prologue_pattern",
-                            confidence=0.75
+                            confidence=Confidence.MEDIUM
                         )
                         
                         visited = set()

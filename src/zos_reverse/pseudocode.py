@@ -4,7 +4,7 @@ from typing import List, Dict, Set, Optional, Tuple, Any
 from dataclasses import dataclass
 import logging
 
-from .ir import ControlFlowGraph, BasicBlock, Instruction, Procedure, BlockType
+from .ir import ControlFlowGraph, BasicBlock, Instruction, Procedure, BlockType, Confidence
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class PseudocodeStatement:
         """Convert to indented string with evidence"""
         indent = "  " * self.indent_level
         addr_str = f"[0x{self.address_range[0]:08X}-0x{self.address_range[1]:08X}]"
-        conf_str = f"(conf: {self.confidence:.2f})" if self.confidence < 0.8 else ""
+        conf_str = f"(conf: {self.confidence})" if isinstance(self.confidence, float) and self.confidence < 0.8 else ""
         return f"{indent}{self.text}  // {addr_str} {conf_str}".rstrip()
 
 
@@ -69,10 +69,11 @@ class PseudocodeGenerator:
     def _generate_procedure(self, proc: Procedure, cfg: ControlFlowGraph):
         """Generate pseudocode for a procedure"""
         self._add_statement("", 'sequence', (0, 0), 1.0)
+        conf_val = self._confidence_to_float(proc.confidence)
         self._add_statement(f"PROCEDURE {proc.name}()", 'sequence',
-                          (proc.entry_address, proc.entry_address), proc.confidence)
+                          (proc.entry_address, proc.entry_address), conf_val)
         self._add_statement(f"// Detection: {proc.detection_method}", 'sequence',
-                          (proc.entry_address, proc.entry_address), proc.confidence)
+                          (proc.entry_address, proc.entry_address), conf_val)
         
         # Find entry block
         entry_block = None
@@ -91,7 +92,7 @@ class PseudocodeGenerator:
                               (proc.entry_address, proc.entry_address), 0.3)
         
         self._add_statement("END PROCEDURE", 'sequence',
-                          (proc.entry_address, proc.entry_address), proc.confidence)
+                          (proc.entry_address, proc.entry_address), self._confidence_to_float(proc.confidence))
     
     def _generate_block_sequence(self, block: BasicBlock, cfg: ControlFlowGraph, indent: int):
         """Generate pseudocode for a sequence of blocks"""
@@ -150,7 +151,7 @@ class PseudocodeGenerator:
             # Generate statement based on instruction
             stmt = self._instruction_to_statement(inst)
             self._add_statement(stmt, 'sequence',
-                              (inst.address, inst.address), inst.confidence, indent)
+                              (inst.address, inst.address), self._confidence_to_float(inst.confidence), indent)
     
     def _generate_branch_structure(self, block: BasicBlock, cfg: ControlFlowGraph, indent: int):
         """Generate if/else structure for conditional branch"""
@@ -263,7 +264,7 @@ class PseudocodeGenerator:
             
         # Unknown or complex instruction
         else:
-            if inst.confidence < 0.5:
+            if inst.confidence == Confidence.LOW:
                 return f"UNKNOWN: {inst.hex_bytes}"
             return f"{mnemonic} {', '.join(operands)}"
     
@@ -345,6 +346,17 @@ class PseudocodeGenerator:
             if block.start_address <= address <= block.end_address:
                 return block
         return None
+    
+    def _confidence_to_float(self, confidence) -> float:
+        """Convert Confidence enum to float value"""
+        if isinstance(confidence, Confidence):
+            if confidence == Confidence.HIGH:
+                return 0.95
+            elif confidence == Confidence.MEDIUM:
+                return 0.75
+            else:  # LOW
+                return 0.3
+        return confidence if isinstance(confidence, float) else 0.5
     
     def _add_statement(self, text: str, stmt_type: str, addr_range: Tuple[int, int],
                       confidence: float, indent: Optional[int] = None):

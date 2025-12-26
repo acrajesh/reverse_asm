@@ -1,0 +1,41 @@
+================================================================================
+z/OS BINARY REVERSE ENGINEERING REPORT
+================================================================================
+
+Generated: 2025-12-26T16:46:20.303389
+
+MODULE INFORMATION
+----------------------------------------
+Name: simple
+Format: unknown
+Entry Point: Unknown
+
+DISASSEMBLY STATISTICS
+----------------------------------------
+Instructions decoded: 8
+Bytes decoded: 28
+Unknown bytes: 0
+Decode rate: 100.0%
+Branch instructions: 2
+Call instructions: 1
+Return instructions: 1
+
+CONTROL FLOW ANALYSIS
+----------------------------------------
+Basic blocks: 2
+Procedures detected: 1
+Unresolved branches: 2
+
+Detected Procedures:
+  - ENTRY_00000000 @ 0x00000000 (confidence: high, method: entry_point)
+
+TOP INSTRUCTION MNEMONICS
+----------------------------------------
+  BALR       :     1 occurrences
+  STM        :     1 occurrences
+  LA         :     1 occurrences
+  L          :     1 occurrences
+  A          :     1 occurrences
+  ST         :     1 occurrences
+  LM         :     1 occurrences
+  BCR        :     1 occurrences

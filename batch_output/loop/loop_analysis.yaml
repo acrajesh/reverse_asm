@@ -1,0 +1,107 @@
+metadata:
+  name: loop
+  format: unknown
+  entry_point: null
+  externals: []
+  csects: []
+  amode: null
+  rmode: null
+  attributes: {}
+statistics:
+  instruction_count: 8
+  decoded_bytes: 28
+  unknown_bytes: 0
+  decode_rate: 1.0
+  branch_count: 3
+  call_count: 1
+  return_count: 1
+  top_mnemonics:
+  - !!python/tuple
+    - LA
+    - 2
+  - !!python/tuple
+    - BALR
+    - 1
+  - !!python/tuple
+    - STM
+    - 1
+  - !!python/tuple
+    - A
+    - 1
+  - !!python/tuple
+    - BCT
+    - 1
+  - !!python/tuple
+    - LM
+    - 1
+  - !!python/tuple
+    - BCR
+    - 1
+  processing_time: 0.0004000663757324219
+  file_path: samples/loop.bin
+cfg:
+  module: loop
+  entry_points:
+  - '0x00000000'
+  blocks:
+    block_00000000:
+      id: block_00000000
+      start: '0x00000000'
+      end: '0x00000000'
+      type: call
+      instructions: 1
+      predecessors: []
+      successors:
+      - block_00000002
+      fall_through: block_00000002
+      branch_targets: []
+      confidence: high
+    block_00000002:
+      id: block_00000002
+      start: '0x00000002'
+      end: '0x00000012'
+      type: branch
+      instructions: 5
+      predecessors:
+      - block_00000000
+      successors:
+      - block_00000016
+      fall_through: block_00000016
+      branch_targets: []
+      confidence: high
+    block_00000016:
+      id: block_00000016
+      start: '0x00000016'
+      end: '0x0000001A'
+      type: return
+      instructions: 2
+      predecessors:
+      - block_00000002
+      successors: []
+      fall_through: null
+      branch_targets: []
+      confidence: high
+  procedures:
+    proc_0001:
+      id: proc_0001
+      name: ENTRY_00000000
+      entry: '0x00000000'
+      exits:
+      - '0x0000001A'
+      blocks:
+      - block_00000000
+      - block_00000002
+      - block_00000016
+      calls_to: []
+      called_by: []
+      confidence: high
+      detection: entry_point
+  call_graph: {}
+  unresolved:
+  - '0x00000000'
+  - '0x00000012'
+  - '0x0000001A'
+  data_regions: []
+unknown_regions: []
+warnings: []
+timestamp: '2025-12-26T16:50:11.457208'

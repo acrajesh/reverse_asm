@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "z/OS Binary Reverse Engineering Tool - Lean MVP"
 authors = [{name = "Principal Architect"}]
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 license = {text = "MIT"}
 
 dependencies = [

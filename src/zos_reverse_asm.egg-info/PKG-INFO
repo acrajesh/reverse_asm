@@ -1,0 +1,94 @@
+Metadata-Version: 2.4
+Name: zos-reverse-asm
+Version: 0.1.0
+Summary: z/OS Binary Reverse Engineering Tool - Lean MVP
+Author: Principal Architect
+License: MIT
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: pyyaml>=6.0
+Requires-Dist: click>=8.1
+Requires-Dist: networkx>=3.0
+Requires-Dist: dataclasses-json>=0.6
+Requires-Dist: rich>=13.0
+Requires-Dist: structlog>=23.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4; extra == "dev"
+Requires-Dist: pytest-cov>=4.1; extra == "dev"
+Requires-Dist: black>=23.0; extra == "dev"
+Requires-Dist: ruff>=0.1; extra == "dev"
+Requires-Dist: mypy>=1.5; extra == "dev"
+
+# z/OS Binary Reverse Engineering Tool - Lean MVP
+
+A minimal viable product (MVP) tool that reverse engineers z/OS load modules or program objects into reconstructed assembler-like code and human-readable pseudocode.
+
+## Features
+
+- **Binary Ingestion**: Accept z/OS load modules and program objects as binary files
+- **Disassembly**: Decode z/Architecture instructions with evidence mapping
+- **Control Flow Recovery**: Build CFG with basic blocks and branch resolution
+- **Procedure Inference**: Detect call/return patterns with confidence scoring
+- **Assembler Reconstruction**: Generate HLASM-like listings with synthetic labels
+- **Pseudocode Generation**: Structured pseudocode with evidence links
+- **Deterministic Reporting**: YAML/JSON output for downstream tooling
+
+## Installation
+
+```bash
+pip install -e .
+```
+
+## Usage
+
+### Single File Analysis
+```bash
+zos-reverse analyze input.bin --output-dir ./output
+```
+
+### Batch Processing
+```bash
+zos-reverse batch ./loadlib_exports --output-dir ./analysis
+```
+
+### Generate Reports
+```bash
+zos-reverse analyze input.bin --format yaml --include-cfg --include-callgraph
+```
+
+## Output Formats
+
+- **Reconstructed Assembler**: HLASM-style with synthetic labels
+- **Pseudocode**: Structured control flow with confidence scores
+- **YAML/JSON**: Machine-readable CFG and call graphs
+- **Text Reports**: Human-readable analysis summaries
+
+## Architecture
+
+The tool follows a modular pipeline architecture:
+
+1. **Artifact Ingestor**: Load and identify binary format
+2. **Disassembler Interface**: Pluggable decoder with IR emission
+3. **CFG Builder**: Basic block construction and branch resolution
+4. **Procedure Heuristics**: Call/return pattern detection
+5. **Assembler Reconstructor**: HLASM-like output generation
+6. **Pseudocode Generator**: Structured code from CFG
+7. **Report Writer**: Multi-format output generation
+
+## Development
+
+```bash
+# Install with dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest
+
+# Format code
+black src/
+ruff check src/
+```
+
+## License
+
+MIT
