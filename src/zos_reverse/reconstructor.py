@@ -3,7 +3,7 @@
 from typing import List, Optional, Dict, Any
 import logging
 
-from .ir import DisassemblyResult, Instruction, BasicBlock, Procedure
+from .ir import DisassemblyResult, Instruction, BasicBlock, Procedure, Confidence
 
 logger = logging.getLogger(__name__)
 
@@ -147,11 +147,26 @@ class AssemblerReconstructor:
     def _add_instruction_list(self, instructions: List[Instruction]):
         """Add a list of instructions in HLASM format"""
         for inst in instructions:
-            line = inst.to_asm_line()
+            # Format instruction
+            addr_str = f"{inst.address:08X}"
+            hex_str = inst.hex_bytes[:12].ljust(12)
+            label = inst.synthetic_label or ""
+            mnemonic = inst.mnemonic
+            
+            # Handle UNRESOLVED_TARGET markers (Technical Design §12.5)
+            if inst.annotation and "UNRESOLVED_TARGET" in inst.annotation:
+                if inst.is_branch and not inst.branch_target:
+                    operands = "UNRESOLVED_TARGET"
+                else:
+                    operands = ",".join(inst.operands) if inst.operands else ""
+            else:
+                operands = ",".join(inst.operands) if inst.operands else ""
+            
+            line = f"{addr_str} {hex_str} {label} {mnemonic} {operands}"
             
             # Add confidence indicator if low
-            if self.include_confidence and inst.confidence < 0.8:
-                line += f"  [conf: {inst.confidence:.2f}]"
+            if self.include_confidence and inst.confidence == Confidence.LOW:
+                line += f"  [conf: {inst.confidence.value}]"
             
             self.output_lines.append(line)
     

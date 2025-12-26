@@ -95,15 +95,25 @@ def analyze(input_file: Path, output_dir: Path, format: tuple,
             # Display results summary
             _display_results_summary(result, output_files)
             
-            console.print("\n[bold green]✓ Analysis complete![/bold green]")
+            # Determine exit code based on decode rate (Technical Design §12.7)
+            decode_rate = result.statistics.get('decode_rate', 0)
+            if decode_rate > 0.8:
+                console.print("\n[bold green]✓ Analysis complete (SUCCESS)![/bold green]")
+                sys.exit(0)  # SUCCESS
+            elif decode_rate >= 0.2:
+                console.print("\n[bold yellow]⚠ Analysis complete (PARTIAL SUCCESS)![/bold yellow]")
+                sys.exit(1)  # PARTIAL
+            else:
+                console.print("\n[bold red]✗ Analysis complete (LOW DECODE RATE)![/bold red]")
+                sys.exit(2)  # FAILURE
         else:
             console.print("[bold red]✗ Analysis failed![/bold red]", style="bold red")
-            sys.exit(1)
+            sys.exit(2)  # FAILURE
             
     except Exception as e:
         console.print(f"[bold red]Error: {e}[/bold red]")
         logger.exception("Analysis failed")
-        sys.exit(1)
+        sys.exit(2)  # FAILURE
 
 
 @main.command()
@@ -126,8 +136,8 @@ def batch(input_dir: Path, output_dir: Path, pattern: str, format: tuple,
     console.print(f"[bold blue]Pattern:[/bold blue] {pattern}")
     console.print(f"[bold blue]Output to:[/bold blue] {output_dir}")
     
-    # Find files
-    files = list(input_dir.glob(pattern))
+    # Find files - sort lexicographically for determinism (Technical Design §12.6)
+    files = sorted(input_dir.glob(pattern))  # Deterministic ordering
     if max_files:
         files = files[:max_files]
     
@@ -154,7 +164,7 @@ def batch(input_dir: Path, output_dir: Path, pattern: str, format: tuple,
     ) as progress:
         task = progress.add_task("Processing files...", total=len(files))
         
-        for file_path in files:
+        for file_path in files:  # Already sorted lexicographically
             progress.update(task, description=f"Processing {file_path.name}...")
             
             try:

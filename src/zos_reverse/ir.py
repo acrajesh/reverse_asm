@@ -6,6 +6,13 @@ from enum import Enum
 import json
 
 
+class Confidence(Enum):
+    """Confidence levels per Technical Design §12.4"""
+    HIGH = "high"        # Direct evidence, no inference
+    MEDIUM = "medium"    # Pattern-based inference
+    LOW = "low"          # Heuristic guess
+
+
 class InstructionFormat(Enum):
     """z/Architecture instruction formats"""
     RR = "RR"      # Register-Register
@@ -48,7 +55,7 @@ class Instruction:
     is_return: bool = False
     branch_target: Optional[int] = None
     annotation: Optional[str] = None
-    confidence: float = 1.0
+    confidence: Confidence = Confidence.HIGH
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -60,7 +67,7 @@ class Instruction:
             "label": self.synthetic_label,
             "branch_target": f"0x{self.branch_target:08X}" if self.branch_target else None,
             "annotation": self.annotation,
-            "confidence": self.confidence
+            "confidence": self.confidence.value if isinstance(self.confidence, Confidence) else self.confidence
         }
     
     def to_asm_line(self) -> str:
@@ -88,7 +95,7 @@ class BasicBlock:
     successors: Set[str] = field(default_factory=set)
     fall_through: Optional[str] = None
     branch_targets: List[str] = field(default_factory=list)
-    confidence: float = 1.0
+    confidence: Confidence = Confidence.HIGH
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -101,7 +108,7 @@ class BasicBlock:
             "successors": list(self.successors),
             "fall_through": self.fall_through,
             "branch_targets": self.branch_targets,
-            "confidence": self.confidence
+            "confidence": self.confidence.value if isinstance(self.confidence, Confidence) else self.confidence
         }
 
 
@@ -115,7 +122,7 @@ class Procedure:
     basic_blocks: List[str] = field(default_factory=list)
     calls_to: Set[str] = field(default_factory=set)
     called_by: Set[str] = field(default_factory=set)
-    confidence: float = 0.5
+    confidence: Confidence = Confidence.MEDIUM
     detection_method: str = "unknown"
     
     def to_dict(self) -> Dict[str, Any]:
@@ -127,7 +134,7 @@ class Procedure:
             "blocks": self.basic_blocks,
             "calls_to": list(self.calls_to),
             "called_by": list(self.called_by),
-            "confidence": self.confidence,
+            "confidence": self.confidence.value,
             "detection": self.detection_method
         }
 

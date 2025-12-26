@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import struct
 import logging
 
-from .ir import Instruction, InstructionFormat, DisassemblyResult, ModuleMetadata, ControlFlowGraph
+from .ir import Instruction, InstructionFormat, DisassemblyResult, ModuleMetadata, ControlFlowGraph, Confidence
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +119,7 @@ class NativeDecoder(DecoderInterface):
             is_call=is_call,
             is_return=is_return,
             branch_target=branch_target,
-            confidence=0.95 if mnemonic != "UNKNOWN" else 0.3
+            confidence=Confidence.HIGH if mnemonic != "UNKNOWN" else Confidence.LOW
         )
     
     def get_instruction_length(self, opcode: int) -> int:
@@ -221,22 +221,7 @@ class NativeDecoder(DecoderInterface):
         return None
 
 
-class ExternalDecoder(DecoderInterface):
-    """Decoder that calls external disassembler tool"""
-    
-    def __init__(self, tool_path: Optional[str] = None):
-        self.tool_path = tool_path or "zda"  # z/Architecture disassembler
-        
-    def decode_instruction(self, data: bytes, offset: int, address: int) -> Optional[Instruction]:
-        # This would call an external tool via subprocess
-        # For MVP, we'll use the native decoder
-        logger.warning("External decoder not implemented, using native decoder")
-        decoder = NativeDecoder()
-        return decoder.decode_instruction(data, offset, address)
-    
-    def get_instruction_length(self, opcode: int) -> int:
-        decoder = NativeDecoder()
-        return decoder.get_instruction_length(opcode)
+# ExternalDecoder removed for MVP - interface preserved for future extension
 
 
 class Disassembler:

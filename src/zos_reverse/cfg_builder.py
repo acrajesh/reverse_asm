@@ -32,7 +32,8 @@ class CFGBuilder:
         self._create_basic_blocks()
         
         # Add control flow edges
-        self._add_control_flow_edges()
+        unresolved = self._add_control_flow_edges()
+        cfg.unresolved_branches.extend(unresolved)
         
         # Assign synthetic labels to branch targets
         self._assign_synthetic_labels()
@@ -116,11 +117,12 @@ class CFGBuilder:
                 block_type=block_type
             )
             
-            self.blocks[block_id] = block
+            self.blocks.append(block)
     
     def _add_control_flow_edges(self):
         """Add edges between basic blocks"""
-        for block_id, block in self.blocks.items():
+        unresolved_branches = []
+        for block_id, block in enumerate(self.blocks):
             if not block.instructions:
                 continue
                 
@@ -134,6 +136,14 @@ class CFGBuilder:
                         block.branch_targets.append(target_block.id)
                         block.successors.add(target_block.id)
                         target_block.predecessors.add(block_id)
+                    else:
+                        # Unresolved branch target
+                        unresolved_branches.append(last_inst.address)
+                        last_inst.annotation = "UNRESOLVED_TARGET"
+                elif last_inst.is_branch:
+                    # Indirect branch without computed target
+                    unresolved_branches.append(last_inst.address)
+                    last_inst.annotation = "UNRESOLVED_TARGET (indirect)"
                 
                 # Add fall-through edge if conditional branch
                 if not self._is_unconditional_branch(last_inst):
@@ -154,6 +164,8 @@ class CFGBuilder:
                     block.fall_through = next_block.id
                     block.successors.add(next_block.id)
                     next_block.predecessors.add(block_id)
+        
+        return unresolved_branches
     
     def _assign_synthetic_labels(self):
         """Assign synthetic labels to branch targets and entry points"""

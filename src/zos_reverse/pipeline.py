@@ -6,7 +6,8 @@ import logging
 import time
 
 from .ingestion import BinaryIngestor
-from .disassembler import Disassembler, NativeDecoder, ExternalDecoder
+from .disassembler import Disassembler, NativeDecoder
+from .classifier import RegionClassifier
 from .cfg_builder import CFGBuilder, ProcedureDetector
 from .ir import DisassemblyResult
 
@@ -28,10 +29,9 @@ class ReverseEngineeringPipeline:
         
     def _init_decoder(self):
         """Initialize the appropriate decoder"""
-        if self.decoder_type == 'external':
-            self.decoder = ExternalDecoder()
-        else:
-            self.decoder = NativeDecoder()
+        # MVP: Only native decoder supported
+        # External decoder interface preserved for future
+        self.decoder = NativeDecoder()
     
     def process_file(self, file_path: Path, 
                     progress_callback: Optional[Callable[[str], None]] = None) -> Optional[DisassemblyResult]:
@@ -78,7 +78,28 @@ class ReverseEngineeringPipeline:
             logger.info(f"Disassembled {len(disasm_result.instructions)} instructions")
             logger.info(f"Decode rate: {disasm_result.statistics.get('decode_rate', 0):.1%}")
             
-            # Step 3: CFG Construction
+            # Step 3: Region Classification
+            if progress_callback:
+                progress_callback("Classifying regions...")
+            
+            classifier = RegionClassifier()
+            sections = [(ingestor.code_start, ingestor.code_end, code_bytes)]
+            regions = classifier.classify(sections, disasm_result.instructions)
+            disasm_result.regions = regions
+            
+            classification_stats = classifier.get_statistics()
+            logger.info(f"Classified {classification_stats['total_regions']} regions: "
+                       f"{classification_stats['code_regions']} code, "
+                       f"{classification_stats['data_regions']} data, "
+                       f"{classification_stats['unknown_regions']} unknown")
+            
+            # Update unknown regions in result
+            for region in classifier.get_unknown_regions():
+                disasm_result.unknown_regions.append(
+                    (region.start_addr, region.end_addr, region.evidence)
+                )
+            
+            # Step 4: CFG Construction
             if progress_callback:
                 progress_callback("Building control flow graph...")
             
